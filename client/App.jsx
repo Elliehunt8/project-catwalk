@@ -19,16 +19,16 @@ const App = (props) => {
             </ul>
           </nav>
         </header>
-        <OverviewProvider>
+        {/* <OverviewProvider>
           <Overview />
         </OverviewProvider>
         <div id="related-products">Related Products</div>
         <div className="related">
           <Related />
-        </div>
+        </div> */}
         <div id="questions-answers">Questions &amp; Answers</div>
         <QuestionsAndAnswers />
-        <RatingReviews />
+        {/* <RatingReviews /> */}
       </div>
     </AppProvider>
   );
