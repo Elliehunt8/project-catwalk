@@ -16,60 +16,46 @@ const pool = new Pool({
 const getQuestions = (id, page, count, cb) => {
   pool
     .query(
-      `Select qs.id, qs.product_id, qs.body, to_timestamp(qs.date_written/1000), qs.asker_name, qs.asker_email, qs.reported, qs.helpful,
-      json_agg(
+      `Select qs.id AS question_id, qs.body AS question_body, to_timestamp(qs.date_written/1000) AS question_date, qs.asker_name, qs.helpful AS question_helpfulness,
+      COALESCE(json_object_agg(ans.id,
         json_build_object(
-          'id', ans.id,
-          'body', ans.body,
-          'date', to_timestamp(ans.date_written/1000),
-          'answerer_name', ans.answerer_name,
-          'helpfulness', ans.helpful
-        )
-      )
-      as answers
-      FROM qs left join ans on ans.question_id = qs.id where qs.id = ${id} GROUP BY qs.id
-  `
+            'id', ans.id,
+            'body', ans.body,
+            'date', to_timestamp(ans.date_written/1000),
+            'answerer_name', ans.answerer_name,
+            'helpfulness', ans.helpful,
+           'photos',
+           (json_build_array((json_build_object('id', pics.id, 'url', pics.url))))   ))
+           FILTER (WHERE ans.id IS NOT NULL), '[]')
+           AS answers
+           FROM qs
+           LEFT JOIN ans on ans.question_id = qs.id
+           LEFT JOIN pics on pics.answer_id = ans.id
+           WHERE qs.product_id = 1 AND qs.reported != 1 GROUP BY qs.id;`
     )
     .then((data) => cb(null, data))
     .catch((err) => cb(err, null));
 };
-// const getAnswers = (question_id, page, count, cb) => {
-//   pool
-//     .query(
-//       `Select ans.id, ans.body, question_id, to_timestamp(ans.date_written/1000), ans.answerer_name, ans.answerer_email, ans.reported, ans.helpful,
-//       json_agg(
-//         json_build_object(
-//           'id', pics.id,
-//           'url', pics.url
-//         )
-//       )
-//       as photos
-//     FROM ans left join pics on pics.answer_id = ans.id where ans.question_id = ${question_id} GROUP BY ans.id
-//   `
-//     )
-//     .then((data) => cb(null, data))
-//     .catch((err) => cb(err, null));
-// };
-// json_agg(
-//   json_build_object(
-//     'question_id', qs.id,
-//     'question_body', qs.body,
-//     'question_date', to_timestamp(qs.date_written / 1000),
-//     'asker_name', qs.asker_name,
-//     'helpfulness', qs.helpful,
-//     'reported', qs.reported,
-//   ))
-// `Select ans.id, ans.body, question_id, to_timestamp(ans.date_written/1000), ans.answerer_name, ans.answerer_email, ans.reported, ans.helpful,
-// json_agg(
-//   json_build_object(
-//     'id', pics.id,
-//     'url', pics.url
-//   )
-// )
-// as photos
-// FROM ans left join pics on pics.answer_id = ans.id where ans.question_id = ${question_id} GROUP BY ans.id
-// `
+// Select qs.id AS question_id, qs.body AS question_body, to_timestamp(qs.date_written/1000) AS question_date, qs.asker_name, qs.asker_email, qs.helpful AS question_helpfulness, CASE when qs.reported = 0 THEN false when qs.reported = 1 THEN null END as "reported", COALESCE(json_object_agg(ans.id, (json_build_object(
+//     'id', ans.id,
+//     'body', ans.body,
+//     'date', to_timestamp(ans.date_written/1000)
+//     'answerer_name', ans.answerer_name,
+//     'helpfulness', ans.helpful
+//     'photos' (json_build_array((json_build_object('id', pics.id, 'url', pics.url))))))) FILTER (WHERE ans.id IS NOT NULL, '[]') AS answers FROM qs left join ans on ans.question_id = qs.id LEFT JOIN pics on pics.answer_id = ans.id where qs.product_id = ${id} AND questions.reported != 1 GROUP BY qs.id
 
+// Select qs.id AS question_id, qs.body AS question_body, to_timestamp(qs.date_written/1000) AS question_date, qs.asker_name, qs.asker_email, qs.helpful AS question_helpfulness, CASE when qs.reported = 0 THEN false when qs.reported = 1 THEN true END as "reported",
+//     json_agg(
+//       json_build_object(
+//         'id', ans.id,
+//         'body', ans.body,
+//         'date', to_timestamp(ans.date_written/1000),
+//         'answerer_name', ans.answerer_name,
+//         'helpfulness', ans.helpful
+//       )
+//     )
+//     as answers
+//     FROM qs left join ans on ans.question_id = qs.id where qs.id = ${id} GROUP BY qs.id
 // {
 //   "product_id": "5",
 //   "results": [{
