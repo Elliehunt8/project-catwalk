@@ -13,7 +13,7 @@ let url = 'https://app-hrsei-api.herokuapp.com/api/fec2/hr-rfp/';
 app.use(express.static('public'));
 app.use(express.json());
 console.log(path.join(__dirname, '../public/index.html'));
-app.use('/qa/questions', routes);
+app.use('/qa', routes);
 
 // Products Routes
 // app.get('/', function (req, res) {

@@ -1,34 +1,36 @@
+/* eslint-disable camelcase */
 const db = require('./db');
 
 const getQs = (req, res) => {
-  console.log(req.query);
-  let pId = req.query.question_id;
+  let pId = req.query.product_id;
   let page = req.query.page || 1;
   let counter = req.query.counter || 5;
-  console.log(pId, page, counter);
   db.getQuestions(pId, page, counter, (err, results) => {
     if (err) {
-      console.log('this is from getQs error: ', err);
+      console.log(err);
       res.send(err);
     } else {
-      console.log('this is from getQs: ', results);
-      res.send(results);
+      res.status(200).send({ product_id: pId, results: results.rows });
     }
   });
 };
 
 const getAs = (req, res) => {
+  //console.log(req);
   let qId = req.params.question_id;
-  let page = req.query.page;
-  let counter = req.query.counter;
-  console.log(qId, page, counter);
+  let page = req.query.page || 1;
+  let counter = req.query.counter || 5;
   db.getAnswers(qId, page, counter, (err, results) => {
     if (err) {
-      console.log('this is from getAs error: ', err);
+      console.log(err);
       res.send(err);
     } else {
-      console.log('this is from getAs: ', results);
-      res.send(results);
+      res.status(200).send({
+        question: qId,
+        page: page,
+        count: counter,
+        results: results.rows,
+      });
     }
   });
 };
@@ -44,7 +46,7 @@ const addAs = (req, res) => {
       res.send(err);
     } else {
       console.log('result from addAs', result);
-      res.send(result);
+      res.status(200).send(result);
     }
   });
 };
@@ -57,7 +59,7 @@ const addQs = (req, res) => {
       console.log('err from controller ', err);
       res.send(err);
     } else {
-      res.send(result);
+      res.status(200).send(result);
     }
   });
 };
@@ -71,7 +73,7 @@ const markQH = (req, res) => {
       res.send(err);
     } else {
       console.log(result);
-      res.send(result);
+      res.status(200).send(result);
     }
   });
 };
@@ -84,9 +86,7 @@ const markAH = (req, res) => {
       console.log('err from controller MHA ', err);
       res.send(err);
     } else {
-      // console.log('result from controller MHA ', result);
       res.status(204).send(result);
-      //res.sendStatus(204);
     }
   });
 };
@@ -97,7 +97,7 @@ const reportA = (req, res) => {
     if (err) {
       res.send(err);
     } else {
-      res.send(result);
+      res.status(204).send(result);
     }
   });
 };
@@ -108,7 +108,7 @@ const reportQ = (req, res) => {
     if (err) {
       res.send(err);
     } else {
-      res.send(result);
+      res.status(204).send(result);
     }
   });
 };
